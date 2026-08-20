@@ -1,0 +1,11 @@
+aio-pika==10.0.1
+alembic==1.19.1
+asyncpg==0.31.0
+fastapi==0.141.1
+pydantic==2.13.4
+pydantic-settings==2.15.0
+pydantic_core==2.46.4
+pytest==9.1.1
+SQLAlchemy==2.0.52
+uvicorn==0.52.3
+httpx>=0.28,<1
