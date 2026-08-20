@@ -17,7 +17,15 @@ logger = logging.getLogger('worker')
 
 
 class TaskProcessor:
+    """Класс отдельного воркера, в котором идут задачи."""
+
     async def process(self, task: Task) -> dict:
+        """Процесс работы над задачей.
+
+        :param task: Task: Задача.
+
+        :return: dict: Результат работы задачи.
+        """
 
         return {
             'message': f'Task {task.title} processed successfully',
@@ -26,6 +34,11 @@ class TaskProcessor:
 
 
 async def publish_outbox_once(channel):
+    """Процесс публикации в outbox событий.
+
+    :param channel: Канал публикации.
+    """
+
     async with SessionLocal() as session:
         events = (await session.scalars(
             select(OutboxEvent)
@@ -42,7 +55,9 @@ async def publish_outbox_once(channel):
                 Message(
                     body,
                     delivery_mode=DeliveryMode.PERSISTENT,
-                    priority=_priority_from_payload(event.payload.get('priority')),
+                    priority=_priority_from_payload(
+                        event.payload.get('priority')
+                    ),
                     message_id=str(event.id),
                     content_type='application/json',
                 ),
@@ -60,10 +75,21 @@ async def publish_outbox_once(channel):
 
 
 def _priority_from_payload(priority: str | None) -> int:
+    """Процесс публикации в outbox событий.
+
+    :param priority: str | none: Приоритет задачи.
+    :return: int: Приоритет задачи в числе или 5.
+    """
+
     return {'LOW': 1, 'MEDIUM': 5, 'HIGH': 10}.get(priority, 5)
 
 
 async def outbox_publisher(channel):
+    """Процесс работы цикла событий outbox.
+
+    :param channel: Канал публикации.
+    """
+
     while True:
         try:
             await publish_outbox_once(channel)
@@ -72,7 +98,16 @@ async def outbox_publisher(channel):
         await asyncio.sleep(settings.outbox_poll_interval)
 
 
-async def handle_message(message: aio_pika.IncomingMessage, processor: TaskProcessor):
+async def handle_message(
+        message: aio_pika.IncomingMessage,
+        processor: TaskProcessor,
+):
+    """Хэндлер обработки доставки сообщений RabbitMQ.
+
+    :param message: IncomingMessage: Входящее сообщение.
+    :param processor: TaskProcessor: Воркер.
+    """
+
     async with message.process(requeue=True):
         payload = json.loads(message.body)
         task_id = uuid.UUID(payload['task_id'])
@@ -109,11 +144,19 @@ async def handle_message(message: aio_pika.IncomingMessage, processor: TaskProce
 
             async with SessionLocal() as session:
                 repo = TaskCrud(session)
-                await repo.fail(task_id, {'type': type(exc).__name__, 'message': str(exc)})
+                await repo.fail(
+                    task_id,
+                    {
+                        'type': type(exc).__name__,
+                        'message': str(exc),
+                    }
+                )
                 await session.commit()
 
 
 async def main():
+    """Основной поток работы воркера."""
+
     connection = await aio_pika.connect_robust(settings.rabbitmq_url)
     channel = await connection.channel()
 
@@ -127,7 +170,11 @@ async def main():
 
     publisher_task = asyncio.create_task(outbox_publisher(channel))
     processor = TaskProcessor()
-    queue = await channel.declare_queue(settings.rabbitmq_queue, durable=True, arguments={'x-max-priority': 10})
+    queue = await channel.declare_queue(
+        settings.rabbitmq_queue,
+        durable=True,
+        arguments={'x-max-priority': 10},
+    )
 
     await queue.consume(lambda message: handle_message(message, processor))
     logger.info('Worker started')

@@ -23,11 +23,25 @@ from app.schemas.schemas import (
 
 
 class TaskService:
+    """Служебный класс для соблюдения бизнес-логики."""
+
     def __init__(self, session: AsyncSession):
+        """Инициализация.
+
+        :param session: AsyncSession: Сессия подключения к БД.
+        """
+
         self.crud = TaskCrud(session)
         self.session = session
 
     async def create(self, data: TaskCreate) -> Task:
+        """Создание задачи и добавление её в Outbox.
+
+        :param data: TaskCreate: Исходные данные для создания задачи.
+
+        :return: Task: Созданная задача.
+        """
+
         task = Task(
             title=data.title,
             description=data.description,
@@ -51,6 +65,13 @@ class TaskService:
         return task
 
     async def get(self, task_id: uuid.UUID) -> Task:
+        """Получение задачи по id.
+
+        :param task_id: uuid.UUID: id задачи.
+
+        :return: Task: Полученная задача.
+        """
+
         task = await self.crud.get(task_id)
 
         if not task:
@@ -62,6 +83,13 @@ class TaskService:
         return task
 
     async def cancel(self, task_id: uuid.UUID) -> Task:
+        """Отмена задачи по id.
+
+        :param task_id: uuid.UUID: id задачи.
+
+        :return: Task: Отменённая задача.
+        """
+
         task = await self.crud.get(task_id)
 
         if not task:

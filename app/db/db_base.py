@@ -5,4 +5,5 @@ from sqlalchemy.orm import (
 
 class Base(DeclarativeBase):
     """Базовый класс для моделей ORM."""
+
     pass

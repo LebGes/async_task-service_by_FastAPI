@@ -28,6 +28,11 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Получение конфигурационных данных приложения.
+
+    :return: Settings: Конфигурационные данные приложения.
+    """
+
     return Settings()
 
 

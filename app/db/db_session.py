@@ -27,5 +27,6 @@ async def get_session() -> AsyncSession:
 
     :return: AsyncSession: сама сессия.
     """
+
     async with SessionLocal() as session:
         yield session

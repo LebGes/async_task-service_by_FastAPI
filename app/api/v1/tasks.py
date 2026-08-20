@@ -38,6 +38,14 @@ async def create_task(
         data: TaskCreate,
         session: AsyncSession = Depends(get_session)
 ):
+    """Создание задачи из приходящих данных.
+
+    :param data: TaskCreate: Исходные данные.
+    :param session: AsyncSession: Сессия в которой идёт обработка данных.
+
+    :return: Возвращает созданную задачу.
+    """
+
     return await TaskService(session).create(data)
 
 
@@ -49,6 +57,17 @@ async def list_tasks(
     offset: int = Query(0, ge=0),
     session: AsyncSession = Depends(get_session),
 ):
+    """Запрашивает список задач с примененными фильтрами.
+
+    :param status: TaskStatus | None: Статус задачи.
+    :param priority: TaskPriority | None: Приоритет задачи.
+    :param limit: int: лимит задач.
+    :param offset: int: Смещение.
+    :param session: AsyncSession: Сессия в которой идёт обработка данных.
+
+    :return: ответ сервера со списком.
+    """
+
     items, total = await TaskCrud(session).list(
         status=status, priority=priority, limit=limit, offset=offset
     )
@@ -61,6 +80,14 @@ async def get_task(
         task_id: uuid.UUID,
         session: AsyncSession = Depends(get_session)
 ):
+    """Получение задачи по её id.
+
+    :param task_id: uuid.UUID: id задачи.
+    :param session: AsyncSession: Сессия в которой идёт обработка данных.
+
+    :return: Возвращает запрашиваемую задачу.
+    """
+
     return await TaskService(session).get(task_id)
 
 
@@ -69,6 +96,14 @@ async def cancel_task(
         task_id: uuid.UUID,
         session: AsyncSession = Depends(get_session)
 ):
+    """Отмена задачи по её id.
+
+    :param task_id: uuid.UUID: id задачи.
+    :param session: AsyncSession: Сессия в которой идёт обработка данных.
+
+    :return: Возвращает отмененную задачу или ничего.
+    """
+
     return await TaskService(session).cancel(task_id)
 
 
@@ -77,6 +112,14 @@ async def get_task_status(
         task_id: uuid.UUID,
         session: AsyncSession = Depends(get_session)
 ):
+    """Получает статус задачи по её id.
+
+    :param task_id: uuid.UUID: id задачи.
+    :param session: AsyncSession: Сессия в которой идёт обработка данных.
+
+    :return: Возвращает краткую информацию со статусом задачи.
+    """
+
     task = await TaskService(session).get(task_id)
 
     return TaskStatusResponse(

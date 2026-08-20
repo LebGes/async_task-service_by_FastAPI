@@ -33,6 +33,7 @@ class TaskCrud:
 
         :return: Task: Вернёт задачу.
         """
+
         self.session.add(task)
         await self.session.flush()
 
@@ -87,6 +88,7 @@ class TaskCrud:
 
         :return: Task | None: Вернёт задачи или ничего.
         """
+
         result = await self.session.execute(
             update(Task).where(
                 Task.id == task_id,
@@ -105,6 +107,7 @@ class TaskCrud:
 
         :return: bool: Добавлена в воркер или нет.
         """
+
         result = await self.session.execute(
             update(Task)
             .where(
@@ -125,8 +128,8 @@ class TaskCrud:
 
         :param task_id: UUID: id задачи.
         :param result_payload: dict: результат выполнения задачи.
-
         """
+
         await self.session.execute(
             update(Task)
             .where(
@@ -147,6 +150,7 @@ class TaskCrud:
         :param task_id: UUID: id задачи.
         :param error_payload: dict: описание падения задачи.
         """
+
         await self.session.execute(
             update(Task)
             .where(
@@ -165,4 +169,5 @@ class TaskCrud:
 
         :param event: OutboxEvent: запись о событии.
         """
+
         self.session.add(event)
